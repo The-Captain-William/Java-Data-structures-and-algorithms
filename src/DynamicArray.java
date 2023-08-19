@@ -2,9 +2,11 @@ import java.util.Arrays;
 
 public class DynamicArray {
     private int counter = 0;
-    private int[] internalArray; // declare internal 
+    private int[] internalArray; // declare internal array
 
-    
+    DynamicArray(int length){
+    this.internalArray = new int[length]; 
+    }
 
     private void doubleItAndGiveItToTheNextPerson() {
         int doubled = internalArray.length * 2;
@@ -15,101 +17,82 @@ public class DynamicArray {
         }
     }
 
-    private void makeSpace(){
-        int[] tempRef = internalArray;
-
-        int newArrayLength = tempRef.length + 1;
-
-        internalArray = new int[newArrayLength];
-        for (int i = 0; i < tempRef.length; i++){
-            internalArray[i] = tempRef[i];
-        }
-    
-    }
-
-
-    DynamicArray(int length){
-        this.internalArray = new int[length]; // instantiate
-
-
-    }
-
     // insert 
     public void insert(int item){
         try {
         internalArray[counter] = item;        
         counter++; 
-        } catch (Exception e) {
-            makeSpace();
+        } catch (IndexOutOfBoundsException e) {
+            doubleItAndGiveItToTheNextPerson();
             internalArray[counter] = item;
             counter++;
         }
     } 
 
     // insert at location
-    public void insert(int item, int index){
-        try{
+    public void insertAt(int item, int index) throws IllegalArgumentException{
+        // within external bounds, assign, don't increment
+        if (index < counter && index >=0){
             internalArray[index] = item;
-        } catch (Exception e){
-            //System.out.println(e);
+        // out of external bounds, double internal array and append item to the end of the external array 
+        } else if (index >= counter){
             doubleItAndGiveItToTheNextPerson();
-            internalArray[index] = item;
+            internalArray[counter] = item;
+            counter++;
+        // out of both internal and external bounds, throw exception
+        } else {
+            throw new IllegalArgumentException("Invalid Index.");
         }
     }
 
-
-
     public void removeAt(int index){
+        System.out.println(counter);
         // if index is last
-        if (index == internalArray.length - 1){
-            internalArray = Arrays.copyOfRange(internalArray, 0, index);
-            
-        } else if (index < internalArray.length) {
-            // 1, 2, 3, 4 || rm 3 @ idx 2 || length is 4
-            // 1, 2, [4], 4
-            for (int i = index; i < internalArray.length - 1; i ++){
+        if (index == counter - 1){
+            internalArray[index] = 0;
+            counter--;
+        
+        // if index is somewhere else    
+        } else if (index < counter && index >= 0) {           
+            for (int i = index; i < counter; i ++){
                 internalArray[i] = internalArray[i + 1];
             }
-            internalArray[internalArray.length - 1] = 0; 
+            internalArray[counter] = 0; 
+            counter--;
+        } else {
+            throw new IllegalArgumentException("Invalid Index");
         }   
     }
 
-    public void truncateAt(int index){
-        if (index == internalArray.length - 1){
-        internalArray = Arrays.copyOfRange(internalArray, 0, index);
-
-        } else if (index < internalArray.length) {
-            
-            // set tempRef to point to internal array
-            int[] tempRef = internalArray;
-            // internal array to point to new array w 1 less value
-            internalArray = new int[internalArray.length - 1];
-            
-            // 
-            int i = 0;
-            for (; i < internalArray.length;){ 
-                if (i < index){
-                    internalArray[i] = tempRef[i];
-                } else{
-                    internalArray[i] = tempRef[i + 1]; 
-                }
-                i++;
-            }
-        }
-    }
-
-
-   public void print(){
+   public void printRaw(){
     System.out.println(Arrays.toString(internalArray));
    } 
 
-   public int indexOf(int index){
-    if (index < internalArray.length){
+   public void print(){
+    System.out.print("[");
+    for (int index = 0; index < counter - 1; index++){
+        System.out.print(internalArray[index] + ", ");
+    }
+    System.out.print(internalArray[counter - 1]);
+    System.out.print("]");
+   }
+
+   public int indexAt(int index){
+    if (index < counter){
         return internalArray[index];
     } else {
         return -1;
     }
    }
+
+   public int indexOf(int item){
+    for (int index = 0; index < counter; index++){
+        if (internalArray[index] == item){
+            return index;
+        }
+    }
+    return -1;    
+    }
 
    public int getLength(){
     try {
